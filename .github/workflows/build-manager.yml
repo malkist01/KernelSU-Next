@@ -12,7 +12,7 @@ on:
       - 'kernel/**'
       - 'userspace/**'
   pull_request:
-    branches: [ "stable" ]
+    branches: [ "dev" ]
     paths:
       - '.github/workflows/build-manager.yml'
       - '.github/workflows/build-lkm.yml'
