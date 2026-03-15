@@ -15,7 +15,6 @@
 #endif
 
 #include "apk_sign.h"
-#include "app_profile.h"
 #include "klog.h" // IWYU pragma: keep
 #include "kernel_compat.h"
 
@@ -29,11 +28,11 @@ struct sdesc {
 static apk_sign_key_t apk_sign_keys[] = {
         { EXPECTED_SIZE_ENJOY, EXPECTED_HASH_ENJOY },
         { EXPECTED_SIZE_NEXT, EXPECTED_HASH_NEXT },
+        { EXPECTED_SIZE_MAMBO, EXPECTED_HASH_MAMBO },
         { EXPECTED_SIZE_WILD, EXPECTED_HASH_WILD },
         { EXPECTED_SIZE_OFFICIAL, EXPECTED_HASH_OFFICIAL },
         { EXPECTED_SIZE_RSUNTK, EXPECTED_HASH_RSUNTK },
         { EXPECTED_SIZE_5EC1CFF, EXPECTED_HASH_5EC1CFF },
-        { EXPECTED_SIZE_MAMBO, EXPECTED_HASH_MAMBO },        
         { EXPECTED_SIZE_KOWX712, EXPECTED_HASH_KOWX712 }
 };
 
