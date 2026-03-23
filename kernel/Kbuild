@@ -39,8 +39,10 @@ $(info -- MDIR: $(MDIR))
 KSU_VERSION := 33068
 KSU_VERSION_TAG := v3.1.0
 
+$(info -- KernelSU-Next version: $(KSU_VERSION))
 ccflags-y += -DKSU_VERSION=$(KSU_VERSION)
-ccflags-y += -DKSU_VERSION_TAG=\"$(KSU_VERSION_TAG)\"
+$(info -- KernelSU-Next tag: $(KSU_VERSION_TAG))
+ccflags-y += -DKSU_VERSION_TAG=\"$(KSU_VERSION_TAG)
 
 ifndef KSU_NEXT_MANAGER_SIZE
 ccflags-y += -DEXPECTED_SIZE=$(KSU_NEXT_MANAGER_SIZE)
