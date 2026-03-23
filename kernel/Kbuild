@@ -29,7 +29,6 @@ obj-$(CONFIG_KSU) += kernelsu.o
 
 $(info ------------------------)
 
-LPATH := /usr/bin/env PATH="$$PATH":/usr/bin:/usr/local/bin
 KDIR := $(KDIR)
 MDIR := $(realpath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 
@@ -42,14 +41,6 @@ KSU_VERSION_TAG := v3.1.0
 
 ccflags-y += -DKSU_VERSION=$(KSU_VERSION)
 ccflags-y += -DKSU_VERSION_TAG=\"$(KSU_VERSION_TAG)\"
-
-ifeq ($(shell grep -q " current_sid(void)" $(srctree)/security/selinux/include/objsec.h; echo $$?),0)
-ccflags-y += -DKSU_COMPAT_HAS_CURRENT_SID
-endif
-
-ifeq ($(shell grep -q "struct selinux_state " $(srctree)/security/selinux/include/security.h; echo $$?),0)
-ccflags-y += -DKSU_COMPAT_HAS_SELINUX_STATE
-endif
 
 ifndef KSU_NEXT_MANAGER_SIZE
 ccflags-y += -DEXPECTED_SIZE=$(KSU_NEXT_MANAGER_SIZE)
