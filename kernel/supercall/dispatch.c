@@ -4,7 +4,11 @@
 #include <linux/string.h>
 #include <linux/uaccess.h>
 #include <linux/version.h>
-
+#ifdef CONFIG_KSU_SUSFS
+#include <linux/namei.h>
+#include <linux/susfs.h>
+#include "objsec.h"
+#endif // #ifdef CONFIG_KSU_SUSFS
 #include "uapi/supercall.h"
 #include "supercall/internal.h"
 #include "arch.h" // IWYU pragma: keep
@@ -94,6 +98,9 @@ static int do_report_event(void __user *arg)
 			} else {
 				pr_info("boot_complete triggered\n");
 				on_boot_completed();
+#ifdef CONFIG_KSU_SUSFS
+            	susfs_start_sdcard_monitor_fn();
+#endif // #ifdef CONFIG_KSU_SUSFS
 			}
 		}
 		break;
@@ -409,7 +416,6 @@ static int do_get_wrapper_fd(void __user *arg) {
 
 static int do_manage_mark(void __user *arg)
 {
-#ifdef KSU_KPROBES_HOOK
 	struct ksu_manage_mark_cmd cmd;
 	int ret = 0;
 
@@ -420,6 +426,7 @@ static int do_manage_mark(void __user *arg)
 
 	switch (cmd.operation) {
 	case KSU_MARK_GET: {
+#ifndef CONFIG_KSU_SUSFS
 		// Get task mark status
 		ret = ksu_get_task_mark(cmd.pid);
 		if (ret < 0) {
@@ -428,8 +435,19 @@ static int do_manage_mark(void __user *arg)
 		}
 		cmd.result = (u32)ret;
 		break;
+#else
+        if (susfs_is_current_proc_umounted()) {
+            ret = 0; // SYSCALL_TRACEPOINT is NOT flagged
+        } else {
+            ret = 1; // SYSCALL_TRACEPOINT is flagged
+        }
+        pr_info("manage_mark: ret for pid %d: %d\n", cmd.pid, ret);
+        cmd.result = (u32)ret;
+        break;
+#endif // #ifndef CONFIG_KSU_SUSFS
 	}
 	case KSU_MARK_MARK: {
+#ifndef CONFIG_KSU_SUSFS
 		if (cmd.pid == 0) {
 			ksu_mark_all_process();
 		} else {
@@ -440,9 +458,15 @@ static int do_manage_mark(void __user *arg)
 				return ret;
 			}
 		}
+#else
+        if (cmd.pid != 0) {
+            return ret;
+        }
+#endif // #ifndef CONFIG_KSU_SUSFS
 		break;
 	}
 	case KSU_MARK_UNMARK: {
+#ifndef CONFIG_KSU_SUSFS
 		if (cmd.pid == 0) {
 			ksu_unmark_all_process();
 		} else {
@@ -453,11 +477,19 @@ static int do_manage_mark(void __user *arg)
 				return ret;
 			}
 		}
+#else
+        if (cmd.pid != 0) {
+            return ret;
+        }
+#endif // #ifndef CONFIG_KSU_SUSFS
 		break;
 	}
 	case KSU_MARK_REFRESH: {
-		ksu_mark_running_process();
+#ifndef CONFIG_KSU_SUSFS
 		pr_info("manage_mark: refreshed running processes\n");
+#else
+        pr_info("susfs: cmd: KSU_MARK_REFRESH: do nothing\n");
+#endif // #ifndef CONFIG_KSU_SUSFS
 		break;
 	}
 	default: {
@@ -471,11 +503,6 @@ static int do_manage_mark(void __user *arg)
 	}
 
 	return 0;
-#else
-	// We don't care, just return -ENOTSUPP
-	pr_warn("manage_mark: this supercalls is not implemented for manual hook.\n");
-	return -ENOTSUPP;
-#endif
 }
 
 static int do_get_hook_mode(void __user *arg)
